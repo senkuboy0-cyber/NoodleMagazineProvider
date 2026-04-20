@@ -12,9 +12,17 @@ class NoodleMagazineProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie, TvType.Others)
 
     private val ua = mapOf(
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer" to "https://noodlemagazine.com/"
-    )
+    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer" to "https://noodlemagazine.com/",
+    "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language" to "en-US,en;q=0.5",
+    "Accept-Encoding" to "gzip, deflate, br",
+    "Connection" to "keep-alive",
+    "Upgrade-Insecure-Requests" to "1",
+    "Sec-Fetch-Dest" to "document",
+    "Sec-Fetch-Mode" to "navigate",
+    "Sec-Fetch-Site" to "none"
+)
 
     override val mainPage = mainPageOf(
         "$mainUrl/video/japanese" to "Japanese",
