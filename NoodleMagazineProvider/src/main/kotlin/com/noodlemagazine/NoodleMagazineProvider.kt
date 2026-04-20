@@ -38,7 +38,7 @@ class NoodleMagazineProvider : MainAPI() {
         val url = if (page == 1) request.data
                   else "${request.data}?page=$page"
         val doc = app.get(url, headers = ua).document
-        val items = doc.select("a.item_link[href*='/watch/']").mapNotNull { a ->
+        val items = doc.select("a.item_link").filter { it.attr("href").contains("/watch/") }.mapNotNull { a ->
             val href = a.attr("abs:href").ifBlank { return@mapNotNull null }
             // title: .title div থেকে
             val title = a.selectFirst(".title")?.text()?.trim()
@@ -61,7 +61,7 @@ class NoodleMagazineProvider : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val encoded = java.net.URLEncoder.encode(query, "UTF-8")
         val doc = app.get("$mainUrl/video/$encoded", headers = ua).document
-        return doc.select("a.item_link[href*='/watch/']").mapNotNull { a ->
+        return doc.select("a.item_link").filter { it.attr("href").contains("/watch/") }.mapNotNull { a ->
             val href = a.attr("abs:href").ifBlank { return@mapNotNull null }
             val title = a.selectFirst(".title")?.text()?.trim()
                 ?: a.selectFirst("img")?.attr("alt")?.trim()
