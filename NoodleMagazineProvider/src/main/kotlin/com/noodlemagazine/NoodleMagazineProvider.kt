@@ -37,24 +37,23 @@ class NoodleMagazineProvider : MainAPI() {
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if (page == 1) request.data
                   else "${request.data}?page=$page"
-
         val doc = app.get(url, headers = ua).document
-
         val items = doc.select("a.item_link[href*='/watch/']").mapNotNull { a ->
             val href = a.attr("abs:href").ifBlank { return@mapNotNull null }
-            val title = a.attr("title").trim().ifBlank {
-                a.selectFirst("img")?.attr("alt")?.trim()
-            } ?: return@mapNotNull null
-            // poster: preview_800.jpg pattern থেকে বের করি
-            val id = href.substringAfterLast("/watch/")
-            val parts = id.split("_")
-            val poster = if (parts.size == 2) {
-                "https://cdn2.pvvstream.pro/videos/${parts[0]}/${parts[1]}/preview_320.jpg"
-            } else null
-
-            newMovieSearchResponse(title, href, TvType.Movie) {
-                posterUrl = poster
-            }
+            // title: .title div থেকে
+            val title = a.selectFirst(".title")?.text()?.trim()
+                ?: a.selectFirst("img")?.attr("alt")?.trim()
+                ?: return@mapNotNull null
+            // poster: img এর data-src থেকে (lazy load)
+            val poster = a.selectFirst("img")?.attr("data-src")?.ifBlank { null }
+                ?: run {
+                    val id = href.substringAfterLast("/watch/")
+                    val parts = id.split("_")
+                    if (parts.size == 2)
+                        "https://cdn2.pvvstream.pro/videos/${parts[0]}/${parts[1]}/preview_320.jpg"
+                    else null
+                }
+            newMovieSearchResponse(title, href, TvType.Movie) { posterUrl = poster }
         }
         return newHomePageResponse(request.name, items, page < 20)
     }
@@ -64,27 +63,26 @@ class NoodleMagazineProvider : MainAPI() {
         val doc = app.get("$mainUrl/video/$encoded", headers = ua).document
         return doc.select("a.item_link[href*='/watch/']").mapNotNull { a ->
             val href = a.attr("abs:href").ifBlank { return@mapNotNull null }
-            val title = a.attr("title").trim().ifBlank {
-                a.selectFirst("img")?.attr("alt")?.trim()
-            } ?: return@mapNotNull null
-            val id = href.substringAfterLast("/watch/")
-            val parts = id.split("_")
-            val poster = if (parts.size == 2) {
-                "https://cdn2.pvvstream.pro/videos/${parts[0]}/${parts[1]}/preview_320.jpg"
-            } else null
-            newMovieSearchResponse(title, href, TvType.Movie) {
-                posterUrl = poster
-            }
+            val title = a.selectFirst(".title")?.text()?.trim()
+                ?: a.selectFirst("img")?.attr("alt")?.trim()
+                ?: return@mapNotNull null
+            val poster = a.selectFirst("img")?.attr("data-src")?.ifBlank { null }
+                ?: run {
+                    val id = href.substringAfterLast("/watch/")
+                    val parts = id.split("_")
+                    if (parts.size == 2)
+                        "https://cdn2.pvvstream.pro/videos/${parts[0]}/${parts[1]}/preview_320.jpg"
+                    else null
+                }
+            newMovieSearchResponse(title, href, TvType.Movie) { posterUrl = poster }
         }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val doc = app.get(url, headers = ua).document
-
         val title = doc.selectFirst("h1")?.text()?.trim()
             ?: doc.selectFirst("meta[property=og:title]")?.attr("content")?.trim()
             ?: url.substringAfterLast("/")
-
         val poster = doc.selectFirst("meta[property=og:image]")?.attr("content")
             ?: run {
                 val id = url.substringAfterLast("/watch/")
@@ -93,10 +91,8 @@ class NoodleMagazineProvider : MainAPI() {
                     "https://cdn2.pvvstream.pro/videos/${parts[0]}/${parts[1]}/preview_800.jpg"
                 else null
             }
-
         val description = doc.selectFirst("meta[name=description]")?.attr("content")
             ?: doc.selectFirst("meta[property=og:description]")?.attr("content")
-
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
             this.plot = description
@@ -110,18 +106,13 @@ class NoodleMagazineProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         if (data.isBlank()) return false
-
         val html = app.get(data, headers = ua).text
-
-        // window.playlist = {...} থেকে sources বের করো
         val playlistMatch = Regex("""window\.playlist\s*=\s*(\{.+?\});""", RegexOption.DOT_MATCHES_ALL)
             .find(html)?.groupValues?.get(1) ?: return false
-
         return try {
             val playlist = JSONObject(playlistMatch)
             val sources = playlist.getJSONArray("sources")
             var found = false
-
             for (i in 0 until sources.length()) {
                 val source = sources.getJSONObject(i)
                 val fileUrl = source.getString("file")
@@ -134,7 +125,6 @@ class NoodleMagazineProvider : MainAPI() {
                     label.contains("240")  -> Qualities.P240.value
                     else -> Qualities.Unknown.value
                 }
-
                 callback(newExtractorLink(name, "$name ${label}p", fileUrl, ExtractorLinkType.VIDEO) {
                     this.quality = quality
                     this.referer = mainUrl
@@ -143,8 +133,6 @@ class NoodleMagazineProvider : MainAPI() {
                 found = true
             }
             found
-        } catch (e: Exception) {
-            false
-        }
+        } catch (e: Exception) { false }
     }
 }
