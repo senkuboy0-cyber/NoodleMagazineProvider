@@ -1,0 +1,14 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/senkuboy0-cyber/NoodleMagazineProvider/builds/NoodleMagazineProvider.cs3",
+    "internalName": "NoodleMagazineProvider",
+    "tvTypes": ["Movie", "Others"],
+    "language": "en",
+    "name": "NoodleMagazine",
+    "authors": ["senkuboy0-cyber"],
+    "version": 1,
+    "description": "NoodleMagazine - Free Videos",
+    "repositoryUrl": "https://github.com/senkuboy0-cyber/NoodleMagazineProvider",
+    "status": 1
+  }
+]

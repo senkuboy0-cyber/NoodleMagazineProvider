@@ -1,0 +1,8 @@
+{
+  "name": "NoodleMagazine Provider",
+  "description": "NoodleMagazine - Free Videos",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/senkuboy0-cyber/NoodleMagazineProvider/builds/plugins.json"
+  ]
+}
