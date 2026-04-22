@@ -30,18 +30,30 @@ jobs:
       - name: Prepare builds folder
         run: |
           mkdir -p builds
-          cp NoodleMagazineProvider/build/NoodleMagazineProvider.cs3 builds/
+          cp NoodleMagazineProvider/build/NoodleMagazineProvider.cs3 builds/ && cp PmovieProvider/build/PmovieProvider.cs3 builds/
           cat > builds/plugins.json << 'JSON'
           [
             {
               "url": "https://raw.githubusercontent.com/senkuboy0-cyber/NoodleMagazineProvider/builds/NoodleMagazineProvider.cs3",
               "internalName": "NoodleMagazineProvider",
-              "tvTypes": ["Movie", "Others"],
+              "tvTypes": ["NSFW", "Others"],
               "language": "en",
               "name": "NoodleMagazine",
               "authors": ["senkuboy0-cyber"],
-              "version": 1,
+              "version": 2,
               "description": "NoodleMagazine - Free Videos",
+              "repositoryUrl": "https://github.com/senkuboy0-cyber/NoodleMagazineProvider",
+              "status": 1
+            },
+            {
+              "url": "https://raw.githubusercontent.com/senkuboy0-cyber/NoodleMagazineProvider/builds/PmovieProvider.cs3",
+              "internalName": "PmovieProvider",
+              "tvTypes": ["Movie", "NSFW", "Others"],
+              "language": "en",
+              "name": "560pmovie",
+              "authors": ["senkuboy0-cyber"],
+              "version": 1,
+              "description": "560pmovie - Free Videos",
               "repositoryUrl": "https://github.com/senkuboy0-cyber/NoodleMagazineProvider",
               "status": 1
             }
